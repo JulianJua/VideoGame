@@ -1,0 +1,26 @@
+.game-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #87CEEB;
+    display: none;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+}
+
+.game-canvas.active {
+    display: block;
+}
+
+.game-ui {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    color: white;
+    text-shadow: 2px 2px 0px #000;
+    font-size: 10px;
+}

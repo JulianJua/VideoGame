@@ -1,0 +1,46 @@
+.mobile-controls {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    display: none;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    z-index: 1000;
+}
+
+.mobile-controls.active {
+    display: flex;
+}
+
+.mobile-btn {
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid #fff;
+    color: white;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    padding: 15px 20px;
+    border-radius: 10px;
+    touch-action: manipulation;
+    user-select: none;
+}
+
+.mobile-btn:active {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+@media (max-width: 768px) {
+    input[type="text"], input[type="email"], input[type="password"] {
+        font-size: 16px;
+        transform: scale(0.5);
+        transform-origin: 0 0;
+        width: 200%;
+        height: 60px;
+    }
+    
+    .form-group {
+        height: 30px;
+        margin-bottom: 30px;
+        overflow: hidden;
+    }
+}
