@@ -13,9 +13,9 @@ const GAME_CONFIG = {
     },
     
     scroll: {
-        INITIAL_SPEED: 3,
-        MAX_SPEED: 6,
-        ACCELERATION: 0.002
+        INITIAL_SPEED: 1.5,
+        MAX_SPEED: 3.5,
+        ACCELERATION: 0.001
     },
     
     characters: [

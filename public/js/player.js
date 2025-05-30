@@ -53,9 +53,9 @@ class Player {
                 this.y = groundLevel - this.height;
                 this.velocityY = 0;
                 this.onGround = true;
-            } else {
-                this.onGround = false;
             }
+            
+            if (this.y < 0) this.y = 0;
             
             if (this.x < 0) this.x = 0;
             if (this.x > GAME_CONFIG.world.WIDTH - this.width) {

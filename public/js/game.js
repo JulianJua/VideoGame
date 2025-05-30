@@ -64,32 +64,41 @@ class GameManager {
             const rightBtn = document.getElementById('rightBtn');
             const jumpBtn = document.getElementById('jumpBtn');
             
-            leftBtn.addEventListener('touchstart', (e) => {
+            const handleStart = (control) => (e) => {
                 e.preventDefault();
-                this.mobileControls.left = true;
-            });
-            leftBtn.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                this.mobileControls.left = false;
-            });
+                e.stopPropagation();
+                this.mobileControls[control] = true;
+            };
             
-            rightBtn.addEventListener('touchstart', (e) => {
+            const handleEnd = (control) => (e) => {
                 e.preventDefault();
-                this.mobileControls.right = true;
-            });
-            rightBtn.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                this.mobileControls.right = false;
-            });
+                e.stopPropagation();
+                this.mobileControls[control] = false;
+            };
             
-            jumpBtn.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                this.mobileControls.jump = true;
-            });
-            jumpBtn.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                this.mobileControls.jump = false;
-            });
+            leftBtn.addEventListener('touchstart', handleStart('left'), { passive: false });
+            leftBtn.addEventListener('touchend', handleEnd('left'), { passive: false });
+            leftBtn.addEventListener('touchcancel', handleEnd('left'), { passive: false });
+            
+            rightBtn.addEventListener('touchstart', handleStart('right'), { passive: false });
+            rightBtn.addEventListener('touchend', handleEnd('right'), { passive: false });
+            rightBtn.addEventListener('touchcancel', handleEnd('right'), { passive: false });
+            
+            jumpBtn.addEventListener('touchstart', handleStart('jump'), { passive: false });
+            jumpBtn.addEventListener('touchend', handleEnd('jump'), { passive: false });
+            jumpBtn.addEventListener('touchcancel', handleEnd('jump'), { passive: false });
+            
+            leftBtn.addEventListener('mousedown', handleStart('left'));
+            leftBtn.addEventListener('mouseup', handleEnd('left'));
+            leftBtn.addEventListener('mouseleave', handleEnd('left'));
+            
+            rightBtn.addEventListener('mousedown', handleStart('right'));
+            rightBtn.addEventListener('mouseup', handleEnd('right'));
+            rightBtn.addEventListener('mouseleave', handleEnd('right'));
+            
+            jumpBtn.addEventListener('mousedown', handleStart('jump'));
+            jumpBtn.addEventListener('mouseup', handleEnd('jump'));
+            jumpBtn.addEventListener('mouseleave', handleEnd('jump'));
         }
         
         document.addEventListener('keydown', (e) => {
