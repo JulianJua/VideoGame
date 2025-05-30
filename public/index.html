@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏁 Retro Racing Game</title>
+    <title>🏃 Run! Run!</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         
@@ -18,37 +18,69 @@
             background: linear-gradient(to bottom, #87CEEB 0%, #87CEEB 70%, #90EE90 70%, #228B22 100%);
             min-height: 100vh;
             color: white;
-            overflow-x: hidden;
+            overflow: hidden;
         }
         
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+            width: 100vw;
+            height: 100vh;
+            position: relative;
         }
         
         .header {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
             text-align: center;
-            margin-bottom: 30px;
+            z-index: 1000;
             text-shadow: 2px 2px 0px #000;
         }
         
         .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            padding: 20px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        
+        .screen.active {
+            display: flex;
+        }
+        
+        .game-over-screen {
+            background: rgba(0, 0, 0, 0.9);
+            border: 4px solid #ff0000;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+        }
+        
+        .results-screen {
+            background: rgba(0, 0, 0, 0.9);
+            border: 4px solid #00ff00;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            max-width: 600px;
+        }
+        
+        .login-screen, .register-screen, .main-menu, .profile-screen, .lobby-screen {
             background: #000;
             border: 8px solid #666;
             border-radius: 15px;
             padding: 20px;
-            margin: 20px auto;
+            margin: 20px;
             max-width: 600px;
             box-shadow: 0 0 20px rgba(0,0,0,0.8);
-        }
-        
-        .login-screen, .register-screen, .main-menu, .profile-screen, .lobby-screen {
-            display: none;
-        }
-        
-        .login-screen.active, .register-screen.active, .main-menu.active, .profile-screen.active, .lobby-screen.active {
-            display: block;
         }
         
         .form-group {
@@ -220,11 +252,13 @@
         }
         
         .game-canvas {
-            border: 4px solid #333;
-            border-radius: 8px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
             background: #87CEEB;
             display: none;
-            margin: 20px auto;
             image-rendering: pixelated;
             image-rendering: -moz-crisp-edges;
             image-rendering: crisp-edges;
@@ -234,57 +268,14 @@
             display: block;
         }
         
-        .pixel-clouds {
+        .game-ui {
             position: absolute;
-            top: 10%;
-            left: 0;
-            width: 100%;
-            height: 40%;
-            pointer-events: none;
-            z-index: -1;
-        }
-        
-        .cloud {
-            position: absolute;
-            background: white;
-            border-radius: 50px;
-            opacity: 0.8;
-        }
-        
-        .cloud:before, .cloud:after {
-            content: '';
-            position: absolute;
-            background: white;
-            border-radius: 50px;
-        }
-        
-        .cloud1 {
-            width: 100px;
-            height: 40px;
             top: 20px;
-            left: 10%;
-            animation: float 20s infinite linear;
-        }
-        
-        .cloud2 {
-            width: 80px;
-            height: 30px;
-            top: 60px;
-            left: 70%;
-            animation: float 25s infinite linear;
-        }
-        
-        .cloud3 {
-            width: 120px;
-            height: 35px;
-            top: 100px;
-            left: 40%;
-            animation: float 30s infinite linear;
-        }
-        
-        @keyframes float {
-            0% { transform: translateX(-200px); }
-            100% { transform: translateX(calc(100vw + 200px)); }
+            left: 20px;
+            z-index: 1000;
+            color: white;
+            text-shadow: 2px 2px 0px #000;
+            font-size: 10px;
         }
         
         .menu-title {
@@ -306,15 +297,9 @@
     </style>
 </head>
 <body>
-    <div class="pixel-clouds">
-        <div class="cloud cloud1"></div>
-        <div class="cloud cloud2"></div>
-        <div class="cloud cloud3"></div>
-    </div>
-    
     <div class="container">
         <div class="header">
-            <h1>🏁 RETRO RACING 🏁</h1>
+            <h1>🏃 RUN! RUN! 🏃</h1>
         </div>
         
         <div class="screen login-screen active" id="loginScreen">
@@ -414,7 +399,26 @@
             <div id="lobbyMessage"></div>
         </div>
         
-        <canvas id="gameCanvas" class="game-canvas" width="1000" height="400"></canvas>
+        <div class="screen game-over-screen" id="gameOverScreen">
+            <h2 style="color: #ff0000; margin-bottom: 20px;">GAME OVER!</h2>
+            <p style="margin-bottom: 20px; font-size: 8px;">You were eliminated!</p>
+            <p style="margin-bottom: 20px; font-size: 6px;">Waiting for other players to finish...</p>
+            <div id="gameOverMessage"></div>
+        </div>
+        
+        <div class="screen results-screen" id="resultsScreen">
+            <h2 style="color: #00ff00; margin-bottom: 20px;">RACE COMPLETE!</h2>
+            <div id="raceResults"></div>
+            <button class="btn" onclick="playAgain()">Play Again</button>
+            <button class="btn btn-secondary" onclick="returnToHub()">Return to Hub</button>
+        </div>
+        
+        <canvas id="gameCanvas" class="game-canvas" width="1000" height="600"></canvas>
+        
+        <div class="game-ui" id="gameUI" style="display: none;">
+            <div>Distance: <span id="distanceCounter">0</span>m</div>
+            <div>Players Alive: <span id="playersAlive">0</span></div>
+        </div>
     </div>
     
     <script src="/socket.io/socket.io.js"></script>
@@ -424,14 +428,24 @@
         let currentRoom = null;
         let gameState = {
             players: new Map(),
-            gameStarted: false
+            gameStarted: false,
+            camera: { x: 0, y: 0 },
+            enemies: [],
+            worldWidth: 5000
         };
         
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.classList.remove('active');
             });
-            document.getElementById(screenId).classList.add('active');
+            if (screenId === 'gameCanvas') {
+                document.getElementById('gameCanvas').classList.add('active');
+                document.getElementById('gameUI').style.display = 'block';
+            } else {
+                document.getElementById('gameCanvas').classList.remove('active');
+                document.getElementById('gameUI').style.display = 'none';
+                document.getElementById(screenId).classList.add('active');
+            }
         }
         
         function showLogin() {
@@ -648,6 +662,18 @@
                 updatePlayerPosition(data);
             });
             
+            socket.on('player-eliminated', (data) => {
+                if (data.username === currentUser.username) {
+                    showGameOver();
+                } else {
+                    removePlayer(data.username);
+                }
+            });
+            
+            socket.on('game-end', (results) => {
+                showGameResults(results);
+            });
+            
             socket.on('error', (message) => {
                 document.getElementById('lobbyMessage').innerHTML = 
                     `<div class="error">${message}</div>`;
@@ -718,8 +744,44 @@
             }
         }
         
+        function showGameOver() {
+            showScreen('gameOverScreen');
+        }
+        
+        function showGameResults(results) {
+            showScreen('resultsScreen');
+            
+            let html = '';
+            results.forEach((result, index) => {
+                let medal = '';
+                if (result.position === 1) medal = '🥇';
+                else if (result.position === 2) medal = '🥈';
+                else if (result.position === 3) medal = '🥉';
+                else medal = `${result.position}th`;
+                
+                html += `
+                    <div class="player-item" style="margin: 10px 0;">
+                        <div>${medal} ${result.username}</div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('raceResults').innerHTML = html;
+        }
+        
+        function playAgain() {
+            if (socket && currentRoom) {
+                socket.emit('play-again', { roomId: currentRoom });
+                showScreen('lobbyScreen');
+            }
+        }
+        
+        function returnToHub() {
+            currentRoom = null;
+            showMainMenu();
+        }
+        
         function startMultiplayerGame(room) {
-            document.getElementById('gameCanvas').classList.add('active');
             showScreen('gameCanvas');
             initializeGame(room);
         }
@@ -728,48 +790,96 @@
             const canvas = document.getElementById('gameCanvas');
             const ctx = canvas.getContext('2d');
             
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
             const characters = [
-                { name: 'Red Racer', color: '#FF0000' },
-                { name: 'Blue Speedster', color: '#0066FF' },
-                { name: 'Green Lightning', color: '#00AA00' },
-                { name: 'Yellow Thunder', color: '#FFAA00' },
-                { name: 'Purple Storm', color: '#AA00AA' }
+                { 
+                    name: 'Red Knight', 
+                    bodyColor: '#FF0000', 
+                    armorColor: '#8B0000',
+                    accessory: 'helmet'
+                },
+                { 
+                    name: 'Blue Mage', 
+                    bodyColor: '#0066FF', 
+                    armorColor: '#003399',
+                    accessory: 'hat'
+                },
+                { 
+                    name: 'Green Archer', 
+                    bodyColor: '#00AA00', 
+                    armorColor: '#006600',
+                    accessory: 'hood'
+                },
+                { 
+                    name: 'Yellow Warrior', 
+                    bodyColor: '#FFAA00', 
+                    armorColor: '#CC8800',
+                    accessory: 'crown'
+                },
+                { 
+                    name: 'Purple Rogue', 
+                    bodyColor: '#AA00AA', 
+                    armorColor: '#660066',
+                    accessory: 'mask'
+                }
             ];
             
             let players = new Map();
             let myPlayer = null;
             let gameRunning = true;
             let finishedPlayers = [];
+            let enemies = [];
+            let camera = { x: 0, y: 0 };
+            let keys = {};
             
             const GRAVITY = 0.8;
-            const JUMP_FORCE = -15;
-            const MOVE_SPEED = 5;
-            const FINISH_LINE = 900;
+            const JUMP_FORCE = -18;
+            const MOVE_SPEED = 7;
+            const WORLD_WIDTH = 5000;
+            const FINISH_LINE = WORLD_WIDTH - 200;
             
             class Player {
                 constructor(username, characterIndex, isMe = false) {
                     this.username = username;
-                    this.x = 50;
-                    this.y = canvas.height - 150;
-                    this.width = 20;
-                    this.height = 32;
+                    this.x = 100;
+                    this.y = canvas.height - 200;
+                    this.width = 24;
+                    this.height = 40;
                     this.velocityX = 0;
                     this.velocityY = 0;
                     this.onGround = false;
                     this.character = characters[characterIndex % characters.length];
                     this.isMe = isMe;
                     this.finished = false;
+                    this.alive = true;
+                    this.direction = 1;
                 }
                 
                 update() {
-                    if (!this.isMe) return;
+                    if (!this.alive || !this.isMe) return;
+                    
+                    if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
+                        this.velocityX = -MOVE_SPEED;
+                        this.direction = -1;
+                    }
+                    if (keys['ArrowRight'] || keys['d'] || keys['D']) {
+                        this.velocityX = MOVE_SPEED;
+                        this.direction = 1;
+                    }
+                    if ((keys['ArrowUp'] || keys['w'] || keys['W'] || keys[' ']) && this.onGround) {
+                        this.velocityY = JUMP_FORCE;
+                        this.onGround = false;
+                    }
                     
                     this.velocityY += GRAVITY;
                     this.x += this.velocityX;
                     this.y += this.velocityY;
                     
-                    if (this.y + this.height >= canvas.height - 50) {
-                        this.y = canvas.height - 50 - this.height;
+                    const groundLevel = canvas.height - 100;
+                    if (this.y + this.height >= groundLevel) {
+                        this.y = groundLevel - this.height;
                         this.velocityY = 0;
                         this.onGround = true;
                     } else {
@@ -777,11 +887,29 @@
                     }
                     
                     if (this.x < 0) this.x = 0;
-                    if (this.x > canvas.width - this.width) this.x = canvas.width - this.width;
+                    if (this.x > WORLD_WIDTH - this.width) this.x = WORLD_WIDTH - this.width;
                     
-                    this.velocityX *= 0.8;
+                    this.velocityX *= 0.85;
                     
-                    if (this.x >= FINISH_LINE && !this.finished) {
+                    camera.x = this.x - canvas.width / 2;
+                    if (camera.x < 0) camera.x = 0;
+                    if (camera.x > WORLD_WIDTH - canvas.width) camera.x = WORLD_WIDTH - canvas.width;
+                    
+                    enemies.forEach(enemy => {
+                        if (this.alive && 
+                            this.x < enemy.x + enemy.width &&
+                            this.x + this.width > enemy.x &&
+                            this.y < enemy.y + enemy.height &&
+                            this.y + this.height > enemy.y) {
+                            this.alive = false;
+                            socket.emit('player-eliminated', {
+                                roomId: currentRoom,
+                                username: this.username
+                            });
+                        }
+                    });
+                    
+                    if (this.x >= FINISH_LINE && !this.finished && this.alive) {
                         this.finished = true;
                         finishedPlayers.push({
                             username: this.username,
@@ -789,9 +917,11 @@
                             time: Date.now()
                         });
                         
-                        if (finishedPlayers.length === room.players.length) {
-                            endGame();
-                        }
+                        socket.emit('player-finished', {
+                            roomId: currentRoom,
+                            username: this.username,
+                            position: finishedPlayers.length
+                        });
                     }
                     
                     if (socket) {
@@ -800,31 +930,125 @@
                             username: this.username,
                             x: this.x,
                             y: this.y,
-                            character: this.character
+                            character: this.character,
+                            alive: this.alive
                         });
+                    }
+                    
+                    document.getElementById('distanceCounter').textContent = Math.floor(this.x / 10);
+                }
+                
+                draw() {
+                    if (!this.alive) return;
+                    
+                    const screenX = this.x - camera.x;
+                    const screenY = this.y;
+                    
+                    if (screenX < -50 || screenX > canvas.width + 50) return;
+                    
+                    ctx.save();
+                    if (this.direction === -1) {
+                        ctx.scale(-1, 1);
+                        ctx.translate(-(screenX + this.width), 0);
+                    } else {
+                        ctx.translate(screenX, 0);
+                    }
+                    
+                    ctx.fillStyle = this.character.bodyColor;
+                    ctx.fillRect(0, screenY + 20, this.width, 20);
+                    
+                    ctx.fillStyle = this.character.armorColor;
+                    ctx.fillRect(2, screenY + 20, this.width - 4, 16);
+                    
+                    ctx.fillStyle = this.character.bodyColor;
+                    ctx.fillRect(6, screenY, 12, 24);
+                    
+                    ctx.fillStyle = '#FFDBAC';
+                    ctx.fillRect(7, screenY + 2, 10, 10);
+                    
+                    ctx.fillStyle = '#000000';
+                    ctx.fillRect(9, screenY + 4, 2, 2);
+                    ctx.fillRect(13, screenY + 4, 2, 2);
+                    ctx.fillRect(10, screenY + 7, 4, 1);
+                    
+                    if (this.character.accessory === 'helmet') {
+                        ctx.fillStyle = this.character.armorColor;
+                        ctx.fillRect(6, screenY - 2, 12, 6);
+                    } else if (this.character.accessory === 'hat') {
+                        ctx.fillStyle = this.character.armorColor;
+                        ctx.fillRect(7, screenY - 4, 10, 4);
+                        ctx.fillRect(11, screenY - 8, 2, 4);
+                    } else if (this.character.accessory === 'hood') {
+                        ctx.fillStyle = this.character.armorColor;
+                        ctx.fillRect(5, screenY - 2, 14, 8);
+                    } else if (this.character.accessory === 'crown') {
+                        ctx.fillStyle = '#FFD700';
+                        ctx.fillRect(7, screenY - 3, 10, 3);
+                        ctx.fillRect(9, screenY - 5, 2, 2);
+                        ctx.fillRect(13, screenY - 5, 2, 2);
+                    } else if (this.character.accessory === 'mask') {
+                        ctx.fillStyle = '#000000';
+                        ctx.fillRect(7, screenY + 2, 10, 4);
+                    }
+                    
+                    ctx.fillStyle = this.character.bodyColor;
+                    ctx.fillRect(3, screenY + 40, 6, 8);
+                    ctx.fillRect(15, screenY + 40, 6, 8);
+                    
+                    ctx.restore();
+                    
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.font = '8px monospace';
+                    ctx.fillText(this.username, screenX - 10, screenY - 10);
+                }
+            }
+            
+            class Enemy {
+                constructor(x, y) {
+                    this.x = x;
+                    this.y = y;
+                    this.width = 16;
+                    this.height = 16;
+                    this.velocityX = (Math.random() - 0.5) * 2;
+                    this.velocityY = 0;
+                    this.color = '#8B008B';
+                    this.bounceTimer = 0;
+                }
+                
+                update() {
+                    this.bounceTimer += 0.1;
+                    this.velocityY = Math.sin(this.bounceTimer) * 2;
+                    
+                    this.x += this.velocityX;
+                    this.y += this.velocityY;
+                    
+                    const groundLevel = canvas.height - 100;
+                    if (this.y + this.height > groundLevel) {
+                        this.y = groundLevel - this.height;
+                    }
+                    
+                    if (this.x <= 100 || this.x >= WORLD_WIDTH - 100) {
+                        this.velocityX *= -1;
                     }
                 }
                 
                 draw() {
-                    ctx.fillStyle = this.character.color;
+                    const screenX = this.x - camera.x;
+                    const screenY = this.y;
                     
-                    ctx.fillRect(this.x, this.y + 16, this.width, 16);
+                    if (screenX < -50 || screenX > canvas.width + 50) return;
                     
-                    ctx.fillRect(this.x + 4, this.y, 12, 20);
+                    ctx.fillStyle = this.color;
+                    ctx.fillRect(screenX, screenY, this.width, this.height);
                     
-                    ctx.fillStyle = '#000000';
-                    ctx.fillRect(this.x + 6, this.y + 4, 2, 2);
-                    ctx.fillRect(this.x + 12, this.y + 4, 2, 2);
+                    ctx.fillStyle = '#FF0080';
+                    ctx.fillRect(screenX + 2, screenY + 2, this.width - 4, this.height - 4);
                     
-                    ctx.fillRect(this.x + 8, this.y + 8, 4, 1);
+                    ctx.fillStyle = '#FF0000';
+                    ctx.fillRect(screenX + 4, screenY + 4, 2, 2);
+                    ctx.fillRect(screenX + 10, screenY + 4, 2, 2);
                     
-                    ctx.fillStyle = this.character.color;
-                    ctx.fillRect(this.x + 2, this.y + 32, 6, 4);
-                    ctx.fillRect(this.x + 12, this.y + 32, 6, 4);
-                    
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.font = '8px monospace';
-                    ctx.fillText(this.username, this.x - 10, this.y - 5);
+                    ctx.fillRect(screenX + 6, screenY + 8, 4, 2);
                 }
             }
             
@@ -834,6 +1058,12 @@
                 players.set(player.username, newPlayer);
                 if (isMe) myPlayer = newPlayer;
             });
+            
+            for (let i = 0; i < 20; i++) {
+                const x = 200 + Math.random() * (WORLD_WIDTH - 400);
+                const y = canvas.height - 150 - Math.random() * 200;
+                enemies.push(new Enemy(x, y));
+            }
             
             function drawBackground() {
                 const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
@@ -845,20 +1075,31 @@
                 ctx.fillStyle = gradient;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 
-                ctx.fillStyle = '#8B4513';
-                for (let i = 0; i < canvas.width; i += 32) {
-                    for (let j = canvas.height - 50; j < canvas.height; j += 16) {
-                        if ((i / 32 + j / 16) % 2 === 0) {
-                            ctx.fillRect(i, j, 32, 16);
-                        }
+                ctx.fillStyle = '#FFFFFF';
+                for (let i = 0; i < 15; i++) {
+                    const x = (i * 200) + Math.sin(Date.now() * 0.001 + i) * 30 - camera.x * 0.3;
+                    const y = 30 + Math.sin(Date.now() * 0.0015 + i * 2) * 20;
+                    if (x > -100 && x < canvas.width + 100) {
+                        drawPixelCloud(x, y);
                     }
                 }
                 
-                ctx.fillStyle = '#FFFFFF';
-                for (let i = 0; i < 8; i++) {
-                    const x = (i * 150) + Math.sin(Date.now() * 0.001 + i) * 20;
-                    const y = 20 + Math.sin(Date.now() * 0.0015 + i * 2) * 10;
-                    drawPixelCloud(x, y);
+                ctx.fillStyle = '#228B22';
+                ctx.fillRect(0 - camera.x, canvas.height - 100, WORLD_WIDTH, 100);
+                
+                ctx.fillStyle = '#32CD32';
+                for (let i = 0; i < WORLD_WIDTH / 32; i++) {
+                    const x = i * 32 - camera.x;
+                    if (x > -32 && x < canvas.width + 32) {
+                        ctx.fillRect(x, canvas.height - 100, 32, 8);
+                    }
+                }
+                
+                for (let i = 0; i < WORLD_WIDTH / 100; i++) {
+                    const x = i * 100 + 50 - camera.x;
+                    if (x > -50 && x < canvas.width + 50) {
+                        drawTree(x, canvas.height - 150);
+                    }
                 }
             }
             
@@ -869,43 +1110,70 @@
                 ctx.fillRect(x + 8, y - 8, 32, 16);
             }
             
-            function drawObstacles() {
+            function drawTree(x, y) {
                 ctx.fillStyle = '#8B4513';
+                ctx.fillRect(x - 4, y, 8, 50);
                 
+                ctx.fillStyle = '#228B22';
+                ctx.fillRect(x - 16, y - 20, 32, 32);
+                ctx.fillRect(x - 12, y - 32, 24, 24);
+                ctx.fillRect(x - 8, y - 40, 16, 16);
+            }
+            
+            function drawObstacles() {
                 const obstacles = [
-                    { x: 200, y: canvas.height - 100, w: 32, h: 50 },
-                    { x: 400, y: canvas.height - 120, w: 48, h: 70 },
-                    { x: 600, y: canvas.height - 90, w: 32, h: 40 },
-                    { x: 750, y: canvas.height - 110, w: 40, h: 60 }
+                    { x: 300, y: canvas.height - 150, w: 40, h: 50 },
+                    { x: 600, y: canvas.height - 180, w: 60, h: 80 },
+                    { x: 1000, y: canvas.height - 140, w: 30, h: 40 },
+                    { x: 1400, y: canvas.height - 160, w: 50, h: 60 },
+                    { x: 1800, y: canvas.height - 170, w: 40, h: 70 },
+                    { x: 2200, y: canvas.height - 150, w: 35, h: 50 },
+                    { x: 2600, y: canvas.height - 180, w: 45, h: 80 },
+                    { x: 3000, y: canvas.height - 140, w: 40, h: 40 },
+                    { x: 3400, y: canvas.height - 160, w: 50, h: 60 },
+                    { x: 3800, y: canvas.height - 170, w: 60, h: 70 },
+                    { x: 4200, y: canvas.height - 150, w: 40, h: 50 }
                 ];
                 
                 obstacles.forEach(obs => {
-                    for (let x = obs.x; x < obs.x + obs.w; x += 16) {
-                        for (let y = obs.y; y < obs.y + obs.h; y += 16) {
-                            if ((x / 16 + y / 16) % 2 === 0) {
-                                ctx.fillStyle = '#8B4513';
-                            } else {
-                                ctx.fillStyle = '#A0522D';
+                    const screenX = obs.x - camera.x;
+                    if (screenX > -obs.w && screenX < canvas.width + obs.w) {
+                        ctx.fillStyle = '#8B4513';
+                        for (let x = 0; x < obs.w; x += 16) {
+                            for (let y = 0; y < obs.h; y += 16) {
+                                if ((Math.floor(x / 16) + Math.floor(y / 16)) % 2 === 0) {
+                                    ctx.fillStyle = '#8B4513';
+                                } else {
+                                    ctx.fillStyle = '#A0522D';
+                                }
+                                ctx.fillRect(screenX + x, obs.y + y, 16, 16);
                             }
-                            ctx.fillRect(x, y, 16, 16);
                         }
                     }
                 });
             }
             
             function drawFinishLine() {
-                ctx.fillStyle = '#FFD700';
-                ctx.fillRect(FINISH_LINE, 0, 8, canvas.height);
-                
-                ctx.fillStyle = '#FF0000';
-                ctx.fillRect(FINISH_LINE + 12, 50, 4, 100);
-                
-                ctx.fillStyle = '#FF4444';
-                ctx.fillRect(FINISH_LINE + 16, 50, 24, 16);
-                
-                ctx.fillStyle = '#000000';
-                ctx.font = '12px monospace';
-                ctx.fillText('FINISH', FINISH_LINE - 60, 30);
+                const screenX = FINISH_LINE - camera.x;
+                if (screenX > -50 && screenX < canvas.width + 50) {
+                    ctx.fillStyle = '#FFD700';
+                    ctx.fillRect(screenX, 0, 12, canvas.height);
+                    
+                    for (let y = 0; y < canvas.height; y += 40) {
+                        ctx.fillStyle = (Math.floor(y / 40) % 2 === 0) ? '#000000' : '#FFFFFF';
+                        ctx.fillRect(screenX, y, 12, 20);
+                    }
+                    
+                    ctx.fillStyle = '#FF0000';
+                    ctx.fillRect(screenX + 16, 50, 6, 150);
+                    
+                    ctx.fillStyle = '#FF4444';
+                    ctx.fillRect(screenX + 22, 50, 40, 25);
+                    
+                    ctx.fillStyle = '#000000';
+                    ctx.font = '16px monospace';
+                    ctx.fillText('FINISH!', screenX - 80, 40);
+                }
             }
             
             function gameLoop() {
@@ -917,78 +1185,45 @@
                 drawObstacles();
                 drawFinishLine();
                 
+                enemies.forEach(enemy => {
+                    enemy.update();
+                    enemy.draw();
+                });
+                
                 players.forEach(player => {
                     player.update();
                     player.draw();
                 });
                 
+                let playersAlive = 0;
+                players.forEach(player => {
+                    if (player.alive) playersAlive++;
+                });
+                document.getElementById('playersAlive').textContent = playersAlive;
+                
                 requestAnimationFrame(gameLoop);
             }
             
-            function endGame() {
-                gameRunning = false;
-                
-                if (socket) {
-                    socket.emit('game-finished', {
-                        roomId: currentRoom,
-                        results: finishedPlayers
-                    });
+            function removePlayer(username) {
+                const player = players.get(username);
+                if (player) {
+                    player.alive = false;
                 }
-                
-                setTimeout(() => {
-                    showResults();
-                }, 2000);
             }
-            
-            function showResults() {
-                let resultsHTML = '<div class="screen" style="display: block;"><h2 class="menu-title">Race Results</h2>';
-                
-                finishedPlayers.forEach((result, index) => {
-                    let medal = '';
-                    if (result.position === 1) medal = '🥇';
-                    else if (result.position === 2) medal = '🥈';
-                    else if (result.position === 3) medal = '🥉';
-                    
-                    resultsHTML += `
-                        <div class="player-item" style="margin: 10px 0;">
-                            <div>${medal} ${result.position}. ${result.username}</div>
-                        </div>
-                    `;
-                });
-                
-                resultsHTML += '<button class="btn" onclick="backToMenu()">Back to Menu</button></div>';
-                
-                document.querySelector('.container').innerHTML += resultsHTML;
-            }
-            
-            window.backToMenu = function() {
-                document.getElementById('gameCanvas').classList.remove('active');
-                location.reload();
-            };
             
             document.addEventListener('keydown', (e) => {
-                if (!myPlayer || !gameRunning) return;
-                
-                switch(e.key) {
-                    case 'ArrowLeft':
-                    case 'a':
-                    case 'A':
-                        myPlayer.velocityX = -MOVE_SPEED;
-                        break;
-                    case 'ArrowRight':
-                    case 'd':
-                    case 'D':
-                        myPlayer.velocityX = MOVE_SPEED;
-                        break;
-                    case 'ArrowUp':
-                    case 'w':
-                    case 'W':
-                    case ' ':
-                        if (myPlayer.onGround) {
-                            myPlayer.velocityY = JUMP_FORCE;
-                        }
-                        break;
-                }
+                keys[e.key] = true;
+                e.preventDefault();
+            });
+            
+            document.addEventListener('keyup', (e) => {
+                keys[e.key] = false;
+                e.preventDefault();
+            });
+            
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
             });
             
             gameLoop();
@@ -999,6 +1234,7 @@
             if (player && data.username !== currentUser.username) {
                 player.x = data.x;
                 player.y = data.y;
+                player.alive = data.alive;
             }
         }
         
