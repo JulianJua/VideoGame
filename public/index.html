@@ -68,7 +68,7 @@
             <button class="btn" onclick="roomManager.createRoom()">Create Game Room</button>
             <button class="btn" onclick="uiManager.showJoinRoom()">Join Game Room</button>
             <button class="btn btn-secondary" onclick="uiManager.showProfile()">View Profile</button>
-            <button class="btn btn-secondary" onclick="profileManager.showFriends()">Friends</button>
+            <button class="btn btn-secondary" onclick="profileManager.showFriendsModal()">Friends</button>
             <button class="btn back-btn" onclick="authManager.logout()">Logout</button>
             
             <div id="joinRoomDiv" style="display: none; margin-top: 20px;">
@@ -112,10 +112,17 @@
         </div>
         
         <div class="screen game-over-screen" id="gameOverScreen">
-            <h2 style="color: #ff0000; margin-bottom: 20px;">GAME OVER!</h2>
-            <p style="margin-bottom: 20px; font-size: 8px;">You fell behind the screen!</p>
-            <p style="margin-bottom: 20px; font-size: 6px;">Waiting for other players to finish...</p>
-            <div id="gameOverMessage"></div>
+            <h2 style="color: #ff0000; margin-bottom: 20px; font-size: 16px;">GAME OVER!</h2>
+            <p style="margin-bottom: 20px; font-size: 10px;">You were eliminated!</p>
+            <p style="margin-bottom: 20px; font-size: 8px;">Waiting for race to finish...</p>
+            <div id="gameOverMessage" style="margin: 20px 0;"></div>
+            <button class="btn back-btn" onclick="gameManager.returnToHub()">Return to Menu</button>
+        </div>
+        
+        <div class="screen countdown-screen" id="countdownScreen">
+            <div style="text-align: center; color: white;">
+                <h1 style="font-size: 80px; color: #00ff00; text-shadow: 4px 4px 0px #000; margin: 0;" id="countdownNumber">3</h1>
+            </div>
         </div>
         
         <div class="screen results-screen" id="resultsScreen">
@@ -133,9 +140,10 @@
         </div>
         
         <div class="mobile-controls" id="mobileControls">
-            <button class="mobile-btn" id="leftBtn">←</button>
+            <div class="virtual-joystick" id="virtualJoystick">
+                <div class="joystick-knob" id="joystickKnob"></div>
+            </div>
             <button class="mobile-btn" id="jumpBtn">JUMP</button>
-            <button class="mobile-btn" id="rightBtn">→</button>
         </div>
     </div>
     

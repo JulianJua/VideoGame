@@ -17,10 +17,10 @@ class Player {
         this.lastJump = 0;
     }
     
-    update(keys, mobileControls, camera, enemies, autoScrollX, finishedPlayers) {
+    update(keys, mobileControls, camera, enemies, autoScrollX, finishedPlayers, gameStarted) {
         if (!this.alive) return;
         
-        if (this.isMe) {
+        if (this.isMe && gameStarted) {
             let moving = false;
             
             if (keys['ArrowLeft'] || keys['a'] || keys['A'] || mobileControls.left) {
@@ -66,6 +66,7 @@ class Player {
             
             if (this.x < camera.x - 100) {
                 this.alive = false;
+                gameManager.showGameOver();
                 socketManager.socket.emit('player-eliminated', {
                     roomId: gameManager.currentRoom,
                     username: this.username
@@ -79,6 +80,7 @@ class Player {
                     this.y < enemy.y + enemy.height &&
                     this.y + this.height > enemy.y) {
                     this.alive = false;
+                    gameManager.showGameOver();
                     socketManager.socket.emit('player-eliminated', {
                         roomId: gameManager.currentRoom,
                         username: this.username

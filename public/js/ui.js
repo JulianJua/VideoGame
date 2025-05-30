@@ -9,6 +9,11 @@ class UIManager {
             if (isMobile) {
                 document.getElementById('mobileControls').classList.add('active');
             }
+        } else if (screenId === 'countdownScreen') {
+            document.getElementById('countdownScreen').classList.add('active');
+            if (isMobile) {
+                document.getElementById('mobileControls').classList.add('active');
+            }
         } else {
             document.getElementById('gameCanvas').classList.remove('active');
             document.getElementById('gameUI').style.display = 'none';

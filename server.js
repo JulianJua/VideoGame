@@ -1,4 +1,60 @@
-const express = require('express');
+app.get('/api/profile/me', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        const decoded = jwt.verify(token, 'secret-key');
+        
+        const user = await User.findById(decoded.userId);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        res.json({
+            id: user._id,
+            username: user.username,
+            email: user.email,
+            gamesPlayed: user.gamesPlayed,
+            gamesWon: user.gamesWon,
+            friends: user.friends
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.get('/api/friend-room/:username', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        const decoded = jwt.verify(token, 'secret-key');
+        const { username } = req.params;
+        
+        const user = await User.findById(decoded.userId);
+        const friend = await User.findOne({ username });
+        
+        if (!friend) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        
+        if (!user.friends.includes(username)) {
+            return res.status(400).json({ message: 'You are not friends with this user' });
+        }
+        
+        let friendRoom = null;
+        activeRooms.forEach((room, roomId) => {
+            const friendInRoom = room.players.find(p => p.username === username);
+            if (friendInRoom && !room.gameStarted) {
+                friendRoom = roomId;
+            }
+        });
+        
+        if (friendRoom) {
+            res.json({ roomId: friendRoom });
+        } else {
+            res.status(404).json({ message: 'Friend is not in an available game room' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Server error' });
+    }
+});const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const mongoose = require('mongoose');
@@ -13,7 +69,7 @@ const io = socketIo(server);
 app.use(express.json());
 app.use(express.static('public'));
 
-mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://julian:Montealban12.@cluster0.or7k80r.mongodb.net/racing-game?retryWrites=true&w=majority&appName=Cluster0', {
+mongoose.connect('mongodb://localhost:27017/racing-game', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
@@ -159,7 +215,63 @@ app.post('/api/add-friend', async (req, res) => {
     }
 });
 
-app.get('/api/friends', async (req, res) => {
+app.get('/api/friend-room/:username', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        const decoded = jwt.verify(token, 'secret-key');
+        const { username } = req.params;
+        
+        const user = await User.findById(decoded.userId);
+        const friend = await User.findOne({ username });
+        
+        if (!friend) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        
+        if (!user.friends.includes(username)) {
+            return res.status(400).json({ message: 'You are not friends with this user' });
+        }
+        
+        let friendRoom = null;
+        activeRooms.forEach((room, roomId) => {
+            const friendInRoom = room.players.find(p => p.username === username);
+            if (friendInRoom && !room.gameStarted) {
+                friendRoom = roomId;
+            }
+        });
+        
+        if (friendRoom) {
+            res.json({ roomId: friendRoom });
+        } else {
+            res.status(404).json({ message: 'Friend is not in an available game room' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.get('/api/profile/me', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        const decoded = jwt.verify(token, 'secret-key');
+        
+        const user = await User.findById(decoded.userId);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        res.json({
+            id: user._id,
+            username: user.username,
+            email: user.email,
+            gamesPlayed: user.gamesPlayed,
+            gamesWon: user.gamesWon,
+            friends: user.friends
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Server error' });
+    }
+});
     try {
         const token = req.headers.authorization?.split(' ')[1];
         const decoded = jwt.verify(token, 'secret-key');
@@ -262,8 +374,19 @@ io.on('connection', (socket) => {
             username: data.username,
             x: data.x,
             y: data.y,
-            character: data.character
+            character: data.character,
+            alive: data.alive,
+            direction: data.direction,
+            animFrame: data.animFrame
         });
+    });
+    
+    socket.on('player-eliminated', (data) => {
+        socket.to(data.roomId).emit('player-eliminated', data);
+    });
+    
+    socket.on('player-finished', (data) => {
+        socket.to(data.roomId).emit('player-finished', data);
     });
     
     socket.on('disconnect', () => {
