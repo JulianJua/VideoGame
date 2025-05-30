@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏁 Retro Racing Game</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Press Start 2P', monospace;
+            background: linear-gradient(to bottom, #87CEEB 0%, #87CEEB 70%, #90EE90 70%, #228B22 100%);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 0px #000;
+        }
+        
+        .screen {
+            background: #000;
+            border: 8px solid #666;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 600px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        }
+        
+        .login-screen, .register-screen, .main-menu, .profile-screen, .lobby-screen {
+            display: none;
+        }
+        
+        .login-screen.active, .register-screen.active, .main-menu.active, .profile-screen.active, .lobby-screen.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #00ff00;
+            font-size: 10px;
+        }
+        
+        input[type="text"], input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            background: #333;
+            border: 2px solid #666;
+            color: white;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            border-radius: 5px;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #00ff00;
+            box-shadow: 0 0 10px rgba(0,255,0,0.3);
+        }
+        
+        .btn {
+            background: linear-gradient(to bottom, #ff6b6b, #ee5a52);
+            border: 3px solid #fff;
+            color: white;
+            padding: 12px 24px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            cursor: pointer;
+            border-radius: 8px;
+            margin: 5px;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+        
+        .btn:hover {
+            background: linear-gradient(to bottom, #ff5252, #d32f2f);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(to bottom, #4CAF50, #45a049);
+        }
+        
+        .btn-secondary:hover {
+            background: linear-gradient(to bottom, #45a049, #3d8b40);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-box {
+            background: #222;
+            border: 2px solid #444;
+            padding: 15px;
+            text-align: center;
+            border-radius: 8px;
+        }
+        
+        .stat-number {
+            font-size: 16px;
+            color: #00ff00;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 8px;
+            color: #ccc;
+        }
+        
+        .friends-list {
+            background: #111;
+            border: 2px solid #333;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+        
+        .friend-item {
+            padding: 10px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .friend-item:last-child {
+            border-bottom: none;
+        }
+        
+        .friend-name {
+            color: #00ff00;
+            font-size: 8px;
+        }
+        
+        .friend-stats {
+            color: #888;
+            font-size: 6px;
+        }
+        
+        .room-info {
+            background: #222;
+            border: 2px solid #444;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+        
+        .players-list {
+            margin: 15px 0;
+        }
+        
+        .player-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            margin: 5px 0;
+            background: #333;
+            border-radius: 5px;
+        }
+        
+        .player-ready {
+            background: #2d5a2d;
+        }
+        
+        .ready-status {
+            font-size: 6px;
+            color: #00ff00;
+        }
+        
+        .error {
+            color: #ff4444;
+            background: #441111;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 8px;
+            border: 1px solid #ff4444;
+        }
+        
+        .success {
+            color: #44ff44;
+            background: #114411;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 8px;
+            border: 1px solid #44ff44;
+        }
+        
+        .game-canvas {
+            border: 4px solid #333;
+            border-radius: 8px;
+            background: #87CEEB;
+            display: none;
+            margin: 20px auto;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+        
+        .game-canvas.active {
+            display: block;
+        }
+        
+        .pixel-clouds {
+            position: absolute;
+            top: 10%;
+            left: 0;
+            width: 100%;
+            height: 40%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+            opacity: 0.8;
+        }
+        
+        .cloud:before, .cloud:after {
+            content: '';
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+        }
+        
+        .cloud1 {
+            width: 100px;
+            height: 40px;
+            top: 20px;
+            left: 10%;
+            animation: float 20s infinite linear;
+        }
+        
+        .cloud2 {
+            width: 80px;
+            height: 30px;
+            top: 60px;
+            left: 70%;
+            animation: float 25s infinite linear;
+        }
+        
+        .cloud3 {
+            width: 120px;
+            height: 35px;
+            top: 100px;
+            left: 40%;
+            animation: float 30s infinite linear;
+        }
+        
+        @keyframes float {
+            0% { transform: translateX(-200px); }
+            100% { transform: translateX(calc(100vw + 200px)); }
+        }
+        
+        .menu-title {
+            font-size: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #00ff00;
+        }
+        
+        .back-btn {
+            background: linear-gradient(to bottom, #666, #444);
+            font-size: 6px;
+            padding: 8px 16px;
+        }
+        
+        .back-btn:hover {
+            background: linear-gradient(to bottom, #777, #555);
+        }
+    </style>
+</head>
+<body>
+    <div class="pixel-clouds">
+        <div class="cloud cloud1"></div>
+        <div class="cloud cloud2"></div>
+        <div class="cloud cloud3"></div>
+    </div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🏁 RETRO RACING 🏁</h1>
+        </div>
+        
+        <div class="screen login-screen active" id="loginScreen">
+            <h2 class="menu-title">Login</h2>
+            <div class="form-group">
+                <label>Username:</label>
+                <input type="text" id="loginUsername" placeholder="Enter username">
+            </div>
+            <div class="form-group">
+                <label>Password:</label>
+                <input type="password" id="loginPassword" placeholder="Enter password">
+            </div>
+            <div id="loginError" class="error" style="display: none;"></div>
+            <button class="btn" onclick="login()">Login</button>
+            <button class="btn btn-secondary" onclick="showRegister()">Register</button>
+        </div>
+        
+        <div class="screen register-screen" id="registerScreen">
+            <h2 class="menu-title">Create Account</h2>
+            <div class="form-group">
+                <label>Username:</label>
+                <input type="text" id="registerUsername" placeholder="Choose username">
+            </div>
+            <div class="form-group">
+                <label>Email:</label>
+                <input type="email" id="registerEmail" placeholder="Enter email">
+            </div>
+            <div class="form-group">
+                <label>Password:</label>
+                <input type="password" id="registerPassword" placeholder="Choose password">
+            </div>
+            <div id="registerError" class="error" style="display: none;"></div>
+            <button class="btn" onclick="register()">Create Account</button>
+            <button class="btn back-btn" onclick="showLogin()">Back to Login</button>
+        </div>
+        
+        <div class="screen main-menu" id="mainMenu">
+            <h2 class="menu-title">Main Menu</h2>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-number" id="userGamesPlayed">0</div>
+                    <div class="stat-label">Games Played</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="userGamesWon">0</div>
+                    <div class="stat-label">Games Won</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="userWinRate">0%</div>
+                    <div class="stat-label">Win Rate</div>
+                </div>
+            </div>
+            
+            <button class="btn" onclick="createRoom()">Create Game Room</button>
+            <button class="btn" onclick="showJoinRoom()">Join Game Room</button>
+            <button class="btn btn-secondary" onclick="showProfile()">View Profile</button>
+            <button class="btn btn-secondary" onclick="showFriends()">Friends</button>
+            <button class="btn back-btn" onclick="logout()">Logout</button>
+            
+            <div id="joinRoomDiv" style="display: none; margin-top: 20px;">
+                <div class="form-group">
+                    <label>Room Code:</label>
+                    <input type="text" id="roomCodeInput" placeholder="Enter room code">
+                </div>
+                <button class="btn" onclick="joinRoom()">Join Room</button>
+                <button class="btn back-btn" onclick="hideJoinRoom()">Cancel</button>
+            </div>
+        </div>
+        
+        <div class="screen profile-screen" id="profileScreen">
+            <h2 class="menu-title">Player Profile</h2>
+            <div id="profileInfo"></div>
+            
+            <div class="form-group" style="margin-top: 20px;">
+                <label>Add Friend:</label>
+                <input type="text" id="friendUsername" placeholder="Enter username">
+                <button class="btn" onclick="addFriend()">Add Friend</button>
+            </div>
+            
+            <div id="friendsListDiv">
+                <h3 style="color: #00ff00; margin: 20px 0 10px 0; font-size: 10px;">Friends List</h3>
+                <div class="friends-list" id="friendsList"></div>
+            </div>
+            
+            <div id="profileMessage" style="margin: 10px 0;"></div>
+            <button class="btn back-btn" onclick="showMainMenu()">Back to Menu</button>
+        </div>
+        
+        <div class="screen lobby-screen" id="lobbyScreen">
+            <h2 class="menu-title">Game Lobby</h2>
+            <div class="room-info">
+                <div style="color: #00ff00; margin-bottom: 10px;">Room Code: <span id="roomCode"></span></div>
+                <div class="players-list" id="playersList"></div>
+                <button class="btn" onclick="toggleReady()">Ready/Unready</button>
+                <button class="btn back-btn" onclick="leaveRoom()">Leave Room</button>
+            </div>
+            <div id="lobbyMessage"></div>
+        </div>
+        
+        <canvas id="gameCanvas" class="game-canvas" width="1000" height="400"></canvas>
+    </div>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let currentUser = null;
+        let socket = null;
+        let currentRoom = null;
+        let gameState = {
+            players: new Map(),
+            gameStarted: false
+        };
+        
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+        
+        function showLogin() {
+            showScreen('loginScreen');
+        }
+        
+        function showRegister() {
+            showScreen('registerScreen');
+        }
+        
+        function showMainMenu() {
+            showScreen('mainMenu');
+            updateUserStats();
+        }
+        
+        function showProfile() {
+            showScreen('profileScreen');
+            loadProfile();
+        }
+        
+        function showFriends() {
+            loadFriends();
+        }
+        
+        async function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentUser = data.user;
+                    localStorage.setItem('token', data.token);
+                    initializeSocket();
+                    showMainMenu();
+                } else {
+                    showError('loginError', data.error);
+                }
+            } catch (error) {
+                showError('loginError', 'Connection error');
+            }
+        }
+        
+        async function register() {
+            const username = document.getElementById('registerUsername').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentUser = data.user;
+                    localStorage.setItem('token', data.token);
+                    initializeSocket();
+                    showMainMenu();
+                } else {
+                    showError('registerError', data.error);
+                }
+            } catch (error) {
+                showError('registerError', 'Connection error');
+            }
+        }
+        
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('token');
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+            }
+            showLogin();
+        }
+        
+        function updateUserStats() {
+            if (currentUser) {
+                document.getElementById('userGamesPlayed').textContent = currentUser.gamesPlayed;
+                document.getElementById('userGamesWon').textContent = currentUser.gamesWon;
+                const winRate = currentUser.gamesPlayed > 0 ? 
+                    ((currentUser.gamesWon / currentUser.gamesPlayed) * 100).toFixed(1) : 0;
+                document.getElementById('userWinRate').textContent = winRate + '%';
+            }
+        }
+        
+        async function loadProfile() {
+            if (!currentUser) return;
+            
+            try {
+                const response = await fetch(`/api/profile/${currentUser.username}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('profileInfo').innerHTML = `
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <div class="stat-number">${data.gamesPlayed}</div>
+                                <div class="stat-label">Games Played</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-number">${data.gamesWon}</div>
+                                <div class="stat-label">Games Won</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-number">${data.winRate}%</div>
+                                <div class="stat-label">Win Rate</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error);
+            }
+            
+            loadFriends();
+        }
+        
+        async function loadFriends() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/friends', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const friends = await response.json();
+                
+                if (response.ok) {
+                    const friendsList = document.getElementById('friendsList');
+                    friendsList.innerHTML = '';
+                    
+                    if (friends.length === 0) {
+                        friendsList.innerHTML = '<div style="padding: 20px; text-align: center; color: #888; font-size: 8px;">No friends added yet</div>';
+                    } else {
+                        friends.forEach(friend => {
+                            const winRate = friend.gamesPlayed > 0 ? 
+                                ((friend.gamesWon / friend.gamesPlayed) * 100).toFixed(1) : 0;
+                            
+                            friendsList.innerHTML += `
+                                <div class="friend-item">
+                                    <div class="friend-name">${friend.username}</div>
+                                    <div class="friend-stats">${friend.gamesWon}W/${friend.gamesPlayed}P (${winRate}%)</div>
+                                </div>
+                            `;
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading friends:', error);
+            }
+        }
+        
+        async function addFriend() {
+            const friendUsername = document.getElementById('friendUsername').value.trim();
+            if (!friendUsername) return;
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/add-friend', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ friendUsername })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('profileMessage').innerHTML = 
+                        '<div class="success">Friend added successfully!</div>';
+                    document.getElementById('friendUsername').value = '';
+                    loadFriends();
+                } else {
+                    document.getElementById('profileMessage').innerHTML = 
+                        `<div class="error">${data.error}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('profileMessage').innerHTML = 
+                    '<div class="error">Connection error</div>';
+            }
+        }
+        
+        function initializeSocket() {
+            socket = io();
+            
+            socket.on('room-created', (data) => {
+                currentRoom = data.roomId;
+                document.getElementById('roomCode').textContent = data.roomId;
+                showScreen('lobbyScreen');
+            });
+            
+            socket.on('room-updated', (room) => {
+                updateLobby(room);
+            });
+            
+            socket.on('game-start', (room) => {
+                startMultiplayerGame(room);
+            });
+            
+            socket.on('player-moved', (data) => {
+                updatePlayerPosition(data);
+            });
+            
+            socket.on('error', (message) => {
+                document.getElementById('lobbyMessage').innerHTML = 
+                    `<div class="error">${message}</div>`;
+            });
+        }
+        
+        function createRoom() {
+            if (socket && currentUser) {
+                socket.emit('create-room', { username: currentUser.username });
+            }
+        }
+        
+        function showJoinRoom() {
+            document.getElementById('joinRoomDiv').style.display = 'block';
+        }
+        
+        function hideJoinRoom() {
+            document.getElementById('joinRoomDiv').style.display = 'none';
+        }
+        
+        function joinRoom() {
+            const roomCode = document.getElementById('roomCodeInput').value.trim();
+            if (roomCode && socket && currentUser) {
+                socket.emit('join-room', { 
+                    roomId: roomCode, 
+                    username: currentUser.username 
+                });
+                currentRoom = roomCode;
+                document.getElementById('roomCode').textContent = roomCode;
+                showScreen('lobbyScreen');
+                hideJoinRoom();
+            }
+        }
+        
+        function toggleReady() {
+            if (socket && currentRoom) {
+                socket.emit('player-ready', { roomId: currentRoom });
+            }
+        }
+        
+        function leaveRoom() {
+            currentRoom = null;
+            showMainMenu();
+        }
+        
+        function updateLobby(room) {
+            const playersList = document.getElementById('playersList');
+            playersList.innerHTML = '';
+            
+            room.players.forEach(player => {
+                const readyClass = player.ready ? 'player-ready' : '';
+                const readyText = player.ready ? 'READY' : 'NOT READY';
+                
+                playersList.innerHTML += `
+                    <div class="player-item ${readyClass}">
+                        <div class="friend-name">${player.username}</div>
+                        <div class="ready-status">${readyText}</div>
+                    </div>
+                `;
+            });
+            
+            const allReady = room.players.every(p => p.ready);
+            const enoughPlayers = room.players.length >= 2;
+            
+            if (allReady && enoughPlayers) {
+                document.getElementById('lobbyMessage').innerHTML = 
+                    '<div class="success">All players ready! Starting game...</div>';
+            }
+        }
+        
+        function startMultiplayerGame(room) {
+            document.getElementById('gameCanvas').classList.add('active');
+            showScreen('gameCanvas');
+            initializeGame(room);
+        }
+        
+        function initializeGame(room) {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            const characters = [
+                { name: 'Red Racer', color: '#FF0000' },
+                { name: 'Blue Speedster', color: '#0066FF' },
+                { name: 'Green Lightning', color: '#00AA00' },
+                { name: 'Yellow Thunder', color: '#FFAA00' },
+                { name: 'Purple Storm', color: '#AA00AA' }
+            ];
+            
+            let players = new Map();
+            let myPlayer = null;
+            let gameRunning = true;
+            let finishedPlayers = [];
+            
+            const GRAVITY = 0.8;
+            const JUMP_FORCE = -15;
+            const MOVE_SPEED = 5;
+            const FINISH_LINE = 900;
+            
+            class Player {
+                constructor(username, characterIndex, isMe = false) {
+                    this.username = username;
+                    this.x = 50;
+                    this.y = canvas.height - 150;
+                    this.width = 20;
+                    this.height = 32;
+                    this.velocityX = 0;
+                    this.velocityY = 0;
+                    this.onGround = false;
+                    this.character = characters[characterIndex % characters.length];
+                    this.isMe = isMe;
+                    this.finished = false;
+                }
+                
+                update() {
+                    if (!this.isMe) return;
+                    
+                    this.velocityY += GRAVITY;
+                    this.x += this.velocityX;
+                    this.y += this.velocityY;
+                    
+                    if (this.y + this.height >= canvas.height - 50) {
+                        this.y = canvas.height - 50 - this.height;
+                        this.velocityY = 0;
+                        this.onGround = true;
+                    } else {
+                        this.onGround = false;
+                    }
+                    
+                    if (this.x < 0) this.x = 0;
+                    if (this.x > canvas.width - this.width) this.x = canvas.width - this.width;
+                    
+                    this.velocityX *= 0.8;
+                    
+                    if (this.x >= FINISH_LINE && !this.finished) {
+                        this.finished = true;
+                        finishedPlayers.push({
+                            username: this.username,
+                            position: finishedPlayers.length + 1,
+                            time: Date.now()
+                        });
+                        
+                        if (finishedPlayers.length === room.players.length) {
+                            endGame();
+                        }
+                    }
+                    
+                    if (socket) {
+                        socket.emit('player-position', {
+                            roomId: currentRoom,
+                            username: this.username,
+                            x: this.x,
+                            y: this.y,
+                            character: this.character
+                        });
+                    }
+                }
+                
+                draw() {
+                    ctx.fillStyle = this.character.color;
+                    
+                    ctx.fillRect(this.x, this.y + 16, this.width, 16);
+                    
+                    ctx.fillRect(this.x + 4, this.y, 12, 20);
+                    
+                    ctx.fillStyle = '#000000';
+                    ctx.fillRect(this.x + 6, this.y + 4, 2, 2);
+                    ctx.fillRect(this.x + 12, this.y + 4, 2, 2);
+                    
+                    ctx.fillRect(this.x + 8, this.y + 8, 4, 1);
+                    
+                    ctx.fillStyle = this.character.color;
+                    ctx.fillRect(this.x + 2, this.y + 32, 6, 4);
+                    ctx.fillRect(this.x + 12, this.y + 32, 6, 4);
+                    
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.font = '8px monospace';
+                    ctx.fillText(this.username, this.x - 10, this.y - 5);
+                }
+            }
+            
+            room.players.forEach((player, index) => {
+                const isMe = player.username === currentUser.username;
+                const newPlayer = new Player(player.username, index, isMe);
+                players.set(player.username, newPlayer);
+                if (isMe) myPlayer = newPlayer;
+            });
+            
+            function drawBackground() {
+                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                gradient.addColorStop(0, '#87CEEB');
+                gradient.addColorStop(0.7, '#87CEEB');
+                gradient.addColorStop(0.7, '#90EE90');
+                gradient.addColorStop(1, '#228B22');
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.fillStyle = '#8B4513';
+                for (let i = 0; i < canvas.width; i += 32) {
+                    for (let j = canvas.height - 50; j < canvas.height; j += 16) {
+                        if ((i / 32 + j / 16) % 2 === 0) {
+                            ctx.fillRect(i, j, 32, 16);
+                        }
+                    }
+                }
+                
+                ctx.fillStyle = '#FFFFFF';
+                for (let i = 0; i < 8; i++) {
+                    const x = (i * 150) + Math.sin(Date.now() * 0.001 + i) * 20;
+                    const y = 20 + Math.sin(Date.now() * 0.0015 + i * 2) * 10;
+                    drawPixelCloud(x, y);
+                }
+            }
+            
+            function drawPixelCloud(x, y) {
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(x, y, 48, 16);
+                ctx.fillRect(x - 16, y + 8, 80, 16);
+                ctx.fillRect(x + 8, y - 8, 32, 16);
+            }
+            
+            function drawObstacles() {
+                ctx.fillStyle = '#8B4513';
+                
+                const obstacles = [
+                    { x: 200, y: canvas.height - 100, w: 32, h: 50 },
+                    { x: 400, y: canvas.height - 120, w: 48, h: 70 },
+                    { x: 600, y: canvas.height - 90, w: 32, h: 40 },
+                    { x: 750, y: canvas.height - 110, w: 40, h: 60 }
+                ];
+                
+                obstacles.forEach(obs => {
+                    for (let x = obs.x; x < obs.x + obs.w; x += 16) {
+                        for (let y = obs.y; y < obs.y + obs.h; y += 16) {
+                            if ((x / 16 + y / 16) % 2 === 0) {
+                                ctx.fillStyle = '#8B4513';
+                            } else {
+                                ctx.fillStyle = '#A0522D';
+                            }
+                            ctx.fillRect(x, y, 16, 16);
+                        }
+                    }
+                });
+            }
+            
+            function drawFinishLine() {
+                ctx.fillStyle = '#FFD700';
+                ctx.fillRect(FINISH_LINE, 0, 8, canvas.height);
+                
+                ctx.fillStyle = '#FF0000';
+                ctx.fillRect(FINISH_LINE + 12, 50, 4, 100);
+                
+                ctx.fillStyle = '#FF4444';
+                ctx.fillRect(FINISH_LINE + 16, 50, 24, 16);
+                
+                ctx.fillStyle = '#000000';
+                ctx.font = '12px monospace';
+                ctx.fillText('FINISH', FINISH_LINE - 60, 30);
+            }
+            
+            function gameLoop() {
+                if (!gameRunning) return;
+                
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                drawBackground();
+                drawObstacles();
+                drawFinishLine();
+                
+                players.forEach(player => {
+                    player.update();
+                    player.draw();
+                });
+                
+                requestAnimationFrame(gameLoop);
+            }
+            
+            function endGame() {
+                gameRunning = false;
+                
+                if (socket) {
+                    socket.emit('game-finished', {
+                        roomId: currentRoom,
+                        results: finishedPlayers
+                    });
+                }
+                
+                setTimeout(() => {
+                    showResults();
+                }, 2000);
+            }
+            
+            function showResults() {
+                let resultsHTML = '<div class="screen" style="display: block;"><h2 class="menu-title">Race Results</h2>';
+                
+                finishedPlayers.forEach((result, index) => {
+                    let medal = '';
+                    if (result.position === 1) medal = '🥇';
+                    else if (result.position === 2) medal = '🥈';
+                    else if (result.position === 3) medal = '🥉';
+                    
+                    resultsHTML += `
+                        <div class="player-item" style="margin: 10px 0;">
+                            <div>${medal} ${result.position}. ${result.username}</div>
+                        </div>
+                    `;
+                });
+                
+                resultsHTML += '<button class="btn" onclick="backToMenu()">Back to Menu</button></div>';
+                
+                document.querySelector('.container').innerHTML += resultsHTML;
+            }
+            
+            window.backToMenu = function() {
+                document.getElementById('gameCanvas').classList.remove('active');
+                location.reload();
+            };
+            
+            document.addEventListener('keydown', (e) => {
+                if (!myPlayer || !gameRunning) return;
+                
+                switch(e.key) {
+                    case 'ArrowLeft':
+                    case 'a':
+                    case 'A':
+                        myPlayer.velocityX = -MOVE_SPEED;
+                        break;
+                    case 'ArrowRight':
+                    case 'd':
+                    case 'D':
+                        myPlayer.velocityX = MOVE_SPEED;
+                        break;
+                    case 'ArrowUp':
+                    case 'w':
+                    case 'W':
+                    case ' ':
+                        if (myPlayer.onGround) {
+                            myPlayer.velocityY = JUMP_FORCE;
+                        }
+                        break;
+                }
+            });
+            
+            gameLoop();
+        }
+        
+        function updatePlayerPosition(data) {
+            const player = gameState.players.get(data.username);
+            if (player && data.username !== currentUser.username) {
+                player.x = data.x;
+                player.y = data.y;
+            }
+        }
+        
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            setTimeout(() => {
+                errorElement.style.display = 'none';
+            }, 5000);
+        }
+        
+        window.addEventListener('load', () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                fetch('/api/profile/me', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }).then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    }
+                    throw new Error('Token invalid');
+                }).then(data => {
+                    currentUser = data;
+                    initializeSocket();
+                    showMainMenu();
+                }).catch(() => {
+                    localStorage.removeItem('token');
+                    showLogin();
+                });
+            } else {
+                showLogin();
+            }
+        });
+    </script>
+</body>
+</html>
