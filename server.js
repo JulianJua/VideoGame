@@ -13,7 +13,7 @@ const io = socketIo(server);
 app.use(express.json());
 app.use(express.static('public'));
 
-mongoose.connect('mongodb+srv://julian:Montealban12.@cluster0.or7k80r.mongodb.net/racing-game?retryWrites=true&w=majority&appName=Cluster0', {
+mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://julian:Montealban12.@cluster0.or7k80r.mongodb.net/racing-game?retryWrites=true&w=majority&appName=Cluster0', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
